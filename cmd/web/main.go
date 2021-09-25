@@ -1,30 +1,30 @@
 package main
 
 import (
+	"flag"
 	"log"
 	"net/http"
 )
 
+func main() {
 
-
-
-
-func main()  {
-	
+	addr := flag.String("addr",":9007","Pass the network  address")
+	flag.Parse()
 	mux := http.NewServeMux()
 
-	server := http.Server{
-		Addr: ":9007",
+	server := &http.Server{
+		Addr:    *addr,
 		Handler: mux,
 	}
 
-	mux.HandleFunc("/",homepage)
+	staticFileserver := http.FileServer(http.Dir("../../ui/static"))
+	mux.Handle("/static/", http.StripPrefix("/static",staticFileserver))
 
+	mux.HandleFunc("/", homepage)
 
+	log.Printf("Starting server on port %s\n",*addr)
 
-	log.Println("Starting server on port 9007")
-	
-	if err := server.ListenAndServe(); err != nil{
+	if err := server.ListenAndServe(); err != nil {
 		log.Fatal(err)
 	}
 }
